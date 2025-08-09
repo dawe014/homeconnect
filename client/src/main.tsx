@@ -13,8 +13,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          {" "}
-          {/* Wrap with AuthProvider */}
           <App />
         </AuthProvider>
       </BrowserRouter>

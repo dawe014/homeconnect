@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-// Define the type for the response data from the API
 interface AuthResponse {
   _id: string;
   name: string;
@@ -26,16 +25,21 @@ export default function RegisterPage() {
     },
     onSuccess: (data) => {
       login(
-        { _id: data._id, name: data.name, email: data.email, role: data.role },
+        {
+          _id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+        },
         data.token
       );
-      navigate("/"); // Redirect to home page on successful registration
+      navigate("/");
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({ name, email, password, role: "user" }); // Default role is 'user'
+    mutation.mutate({ name, email, password, role: "user" });
   };
 
   return (

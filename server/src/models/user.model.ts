@@ -7,6 +7,7 @@ export interface IUser extends Document {
   password?: string;
   role: "user" | "agent" | "admin";
   comparePassword: (enteredPassword: string) => Promise<boolean>;
+  avatar?: string;
 }
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -19,6 +20,7 @@ const UserSchema: Schema<IUser> = new Schema(
       enum: ["user", "agent", "admin"],
       default: "user",
     },
+    avatar: { type: String, default: "" },
   },
   { timestamps: true }
 );

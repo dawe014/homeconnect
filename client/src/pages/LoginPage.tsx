@@ -4,16 +4,15 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-// The response data is the same for login and register, so we can reuse this.
 interface AuthResponse {
   _id: string;
   name: string;
   email: string;
   role: "user" | "agent" | "admin";
+  avatar: string;
   token: string;
 }
 
-// Define the type for the data sent to the mutation
 interface LoginCredentials {
   email: string;
   password: string;
@@ -26,35 +25,36 @@ export default function LoginPage() {
   const { login } = useAuth();
 
   const mutation = useMutation<AuthResponse, Error, LoginCredentials>({
-    // 1. The mutation function now calls the /login endpoint
     mutationFn: (credentials) => {
       return api.post("/auth/login", credentials).then((res) => res.data);
     },
-    // The success logic is identical: update context and redirect
     onSuccess: (data) => {
       login(
-        { _id: data._id, name: data.name, email: data.email, role: data.role },
+        {
+          _id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          avatar: data.avatar,
+        },
         data.token
       );
-      navigate("/"); // Redirect to home page on successful login
+      navigate("/");
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // 2. We only need to mutate with email and password
     mutation.mutate({ email, password });
   };
 
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        {/* 3. The UI text is updated for logging in */}
         <h1 className="text-2xl font-bold text-center">
           Login to Your Account
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 4. The 'Name' input field is removed */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Email

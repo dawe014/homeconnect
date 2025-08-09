@@ -11,8 +11,12 @@ export interface IProperty extends Document {
   zipCode: string;
   bedrooms: number;
   bathrooms: number;
+  sqft: number;
+  latitude: number;
+  longitude: number;
   propertyType: "House" | "Apartment" | "Condo";
   status: "For Sale" | "For Rent";
+  isAvailable: boolean;
   images: string[];
   agent: IUser["_id"];
 }
@@ -28,6 +32,9 @@ const PropertySchema: Schema = new Schema(
     zipCode: { type: String, required: true },
     bedrooms: { type: Number, required: true },
     bathrooms: { type: Number, required: true },
+    sqft: { type: Number, required: true },
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
     propertyType: {
       type: String,
       enum: ["House", "Apartment", "Condo"],
@@ -38,6 +45,7 @@ const PropertySchema: Schema = new Schema(
       enum: ["For Sale", "For Rent"],
       required: true,
     },
+    isAvailable: { type: Boolean, default: true },
     images: [{ type: String }],
     agent: {
       type: mongoose.Schema.Types.ObjectId,

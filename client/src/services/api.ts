@@ -10,7 +10,6 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Interceptor to add the auth token to every request if it exists
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
