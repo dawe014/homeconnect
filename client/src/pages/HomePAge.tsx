@@ -1,4 +1,3 @@
-// client/src/pages/HomePage.tsx
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api from "../services/api";
