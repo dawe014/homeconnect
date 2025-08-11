@@ -22,7 +22,7 @@ const fetchProperties = async (filters: FilterState): Promise<Property[]> => {
       acc[key] = value;
     }
     return acc;
-  }, {} as any);
+  }, {} as Record<string, string>);
 
   const params = new URLSearchParams(validFilters).toString();
   const { data } = await api.get(`/properties?${params}`);
@@ -50,17 +50,27 @@ export default function ListingsPage({
   });
 
   const {
-    data: properties,
+    data: properties = [],
     isLoading,
     isError,
   } = useQuery<Property[], Error>({
     queryKey: ["properties", filters],
     queryFn: () => fetchProperties(filters),
-    keepPreviousData: true,
   });
 
-  const handleFilterChange = (newFilters: FilterState) => {
-    setFilters({ ...initialFilters, ...newFilters });
+  const handleFilterChange = (newFilters: Partial<FilterState>) => {
+    setFilters((prev) => {
+      const updatedFilters: FilterState = {
+        searchTerm: newFilters.searchTerm ?? prev.searchTerm,
+        propertyType: newFilters.propertyType ?? prev.propertyType,
+        status: newFilters.status ?? prev.status,
+        minPrice: newFilters.minPrice ?? prev.minPrice,
+        maxPrice: newFilters.maxPrice ?? prev.maxPrice,
+        bedrooms: newFilters.bedrooms ?? prev.bedrooms,
+        sort: newFilters.sort ?? prev.sort,
+      };
+      return updatedFilters;
+    });
   };
 
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -92,8 +102,8 @@ export default function ListingsPage({
             "Searching..."
           ) : (
             <>
-              <span className="font-bold">{properties?.length || 0}</span>{" "}
-              properties found
+              <span className="font-bold">{properties.length}</span> properties
+              found
             </>
           )}
         </div>
@@ -129,9 +139,9 @@ export default function ListingsPage({
               Could not load properties at this time. Please try again later.
             </p>
           </div>
-        ) : properties && properties.length > 0 ? (
+        ) : properties.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {properties.map((property) => (
+            {properties.map((property: Property) => (
               <PropertyCard key={property._id} property={property} />
             ))}
           </div>

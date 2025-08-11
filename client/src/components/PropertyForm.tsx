@@ -2,8 +2,14 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { propertyFormSchema } from "../lib/validators";
-import type { TPropertyFormSchema } from "../lib/validators";
+import {
+  clientPropertyFormSchema,
+  propertyFormSchema,
+} from "../lib/validators";
+import type {
+  TClientPropertyFormSchema,
+  TPropertyFormSchema,
+} from "../lib/validators";
 
 import {
   ExclamationCircleIcon,
@@ -14,7 +20,7 @@ import {
 import { FaBath, FaBed } from "react-icons/fa";
 
 interface PropertyFormProps {
-  initialData?: Partial<TPropertyFormSchema>;
+  initialData?: Partial<TClientPropertyFormSchema>;
   isSubmitting: boolean;
   submitButtonText: string;
   onFormSubmit: (data: TPropertyFormSchema, images?: FileList) => void;
@@ -28,7 +34,6 @@ const FormLabel = (props: React.ComponentPropsWithoutRef<"label">) => (
   />
 );
 
-// Reusable Input with Icon component.
 const InputWithIcon = ({
   icon,
   ...props
@@ -57,13 +62,14 @@ export default function PropertyForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<TPropertyFormSchema>({
-    resolver: zodResolver(propertyFormSchema),
+  } = useForm<TClientPropertyFormSchema>({
+    resolver: zodResolver(clientPropertyFormSchema),
     defaultValues: initialData,
   });
 
-  const onSubmit: SubmitHandler<TPropertyFormSchema> = (data) => {
-    onFormSubmit(data, imageFiles || undefined);
+  const onSubmit: SubmitHandler<TClientPropertyFormSchema> = (data) => {
+    const transformedData = propertyFormSchema.parse(data);
+    onFormSubmit(transformedData, imageFiles || undefined);
   };
 
   const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +78,7 @@ export default function PropertyForm({
     }
   };
 
-  const ErrorMessage = ({ name }: { name: keyof TPropertyFormSchema }) =>
+  const ErrorMessage = ({ name }: { name: keyof TClientPropertyFormSchema }) =>
     errors[name] ? (
       <p className="mt-1 text-sm text-red-600">{errors[name]?.message}</p>
     ) : null;

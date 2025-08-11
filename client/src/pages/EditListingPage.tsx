@@ -5,7 +5,10 @@ import api from "../services/api";
 import type { Property } from "../types";
 import Spinner from "../components/Spinner";
 import PropertyForm from "../components/PropertyForm";
-import type { TPropertyFormSchema } from "../lib/validators";
+import type {
+  TClientPropertyFormSchema,
+  TPropertyFormSchema,
+} from "../lib/validators";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
 const SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
@@ -13,6 +16,21 @@ const SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
 const fetchPropertyById = async (id: string): Promise<Property> => {
   const { data } = await api.get(`/properties/${id}`);
   return data;
+};
+
+// Helper function to convert Property type to form initial data
+const propertyToFormData = (
+  property: Property
+): Partial<TClientPropertyFormSchema> => {
+  return {
+    ...property,
+    price: property.price.toString(),
+    bedrooms: property.bedrooms.toString(),
+    bathrooms: property.bathrooms.toString(),
+    sqft: property.sqft.toString(),
+    latitude: property.latitude.toString(),
+    longitude: property.longitude.toString(),
+  };
 };
 
 export default function EditListingPage() {
@@ -131,18 +149,20 @@ export default function EditListingPage() {
         )}
       </div>
 
-      <PropertyForm
-        initialData={property}
-        isSubmitting={mutation.isPending}
-        submitButtonText="Save Changes"
-        onFormSubmit={handleSubmit}
-        errorMessage={
-          mutation.isError
-            ? (mutation.error as any).response?.data?.message ||
-              "An unexpected error occurred."
-            : undefined
-        }
-      />
+      {property && (
+        <PropertyForm
+          initialData={propertyToFormData(property)}
+          isSubmitting={mutation.isPending}
+          submitButtonText="Save Changes"
+          onFormSubmit={handleSubmit}
+          errorMessage={
+            mutation.isError
+              ? (mutation.error as any).response?.data?.message ||
+                "An unexpected error occurred."
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

@@ -33,13 +33,12 @@ export default function AgentsPage() {
   }, [searchTerm]);
 
   const {
-    data: agents,
+    data: agents = [],
     isLoading,
     isError,
   } = useQuery<Agent[], Error>({
     queryKey: ["agents", debouncedSearchTerm],
     queryFn: () => fetchAgents(debouncedSearchTerm),
-    keepPreviousData: true,
   });
 
   return (
@@ -81,9 +80,9 @@ export default function AgentsPage() {
           <Spinner />
         ) : isError ? (
           <div className="text-center text-red-500">Failed to load agents.</div>
-        ) : agents && agents.length > 0 ? (
+        ) : agents.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {agents.map((agent) => (
+            {agents.map((agent: Agent) => (
               <AgentCard key={agent._id} agent={agent} />
             ))}
           </div>
