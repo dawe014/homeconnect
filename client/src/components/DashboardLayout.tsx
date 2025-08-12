@@ -77,7 +77,11 @@ export default function DashboardLayout() {
           to="/"
           className="flex items-center gap-2 hover:opacity-90 transition-opacity"
         >
-          <img src="/2.png" alt="logo image" />
+          <img
+            src="/2.png"
+            alt="logo image"
+            className="h-10 w-10 rounded-full"
+          />
           <span className="text-white text-xl font-bold">HomeConnect</span>
         </Link>
       </div>
