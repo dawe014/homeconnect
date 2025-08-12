@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
-  HomeModernIcon,
   UserCircleIcon,
   BuildingOffice2Icon,
   Bars3Icon,
@@ -86,7 +85,7 @@ export default function Navbar() {
               onClick={closeAllMenus}
               className="flex-shrink-0 flex items-center space-x-2"
             >
-              <HomeModernIcon className="h-8 w-8 text-indigo-600" />
+              <img src="/2.png" alt="logo" className="h-16 w-16 rounded-full" />
               <span className="text-2xl font-bold text-gray-800 hidden sm:block">
                 HomeConnect
               </span>
