@@ -114,7 +114,22 @@ export default function Navbar() {
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100"
                 >
-                  <UserCircleIcon className="h-8 w-8 text-gray-500" />
+                  {user?.avatar ? (
+                    <img
+                      className="h-8 w-8 rounded-full object-cover"
+                      src={
+                        user.avatar
+                          ? user.avatar
+                          : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                              user.name
+                            )}&background=e0e7ff&color=4338ca&size=256`
+                      }
+                      alt={user.name}
+                    />
+                  ) : (
+                    <UserCircleIcon className="h-8 w-8 text-gray-500" />
+                  )}
+
                   <span className="font-medium text-gray-700">
                     {user?.name}
                   </span>
@@ -182,7 +197,21 @@ export default function Navbar() {
                 // -- Logged-in state (Mobile) --
                 <div className="px-2 py-3">
                   <div className="flex items-center space-x-3 mb-3">
-                    <UserCircleIcon className="h-10 w-10 text-gray-500" />
+                    {user?.avatar ? (
+                      <img
+                        className="h-10 w-10 rounded-full object-cover"
+                        src={
+                          user.avatar
+                            ? user.avatar
+                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                user.name
+                              )}&background=e0e7ff&color=4338ca&size=256`
+                        }
+                        alt={user.name}
+                      />
+                    ) : (
+                      <UserCircleIcon className="h-10 w-10 text-gray-500" />
+                    )}
                     <div>
                       <p className="font-bold text-gray-800">{user?.name}</p>
                       <p className="text-sm text-gray-500">{user?.email}</p>
