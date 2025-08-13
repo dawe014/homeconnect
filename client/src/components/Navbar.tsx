@@ -9,9 +9,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { FaRegArrowAltCircleRight } from "react-icons/fa";
 
+const SERVER_URL = import.meta.env.VITE_API_SERVER_URL || "";
 export default function Navbar() {
-  const SERVER_URL = import.meta.env.VITE_API_SERVER_URL || "";
-
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -35,6 +34,21 @@ export default function Navbar() {
     closeAllMenus();
     navigate("/");
   };
+
+  const getAvatarUrl = () => {
+    if (user?.avatar) {
+      if (user?.avatar.startsWith("http")) {
+        return user?.avatar;
+      }
+      return `${SERVER_URL}${user?.avatar}`;
+    }
+
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user?.name || "User"
+    )}&background=e0e7ff&color=4338ca&size=256`;
+  };
+
+  const avatarUrl = getAvatarUrl();
 
   const getMobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
@@ -119,13 +133,7 @@ export default function Navbar() {
                   {user?.avatar ? (
                     <img
                       className="h-8 w-8 rounded-full object-cover"
-                      src={
-                        user.avatar
-                          ? `${SERVER_URL}/${user.avatar}`
-                          : `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                              user.name
-                            )}&background=e0e7ff&color=4338ca&size=256`
-                      }
+                      src={avatarUrl}
                       alt={user.name}
                     />
                   ) : (
@@ -202,13 +210,7 @@ export default function Navbar() {
                     {user?.avatar ? (
                       <img
                         className="h-10 w-10 rounded-full object-cover"
-                        src={
-                          user.avatar
-                            ? `${SERVER_URL}/${user.avatar}`
-                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                user.name
-                              )}&background=e0e7ff&color=4338ca&size=256`
-                        }
+                        src={avatarUrl}
                         alt={user.name}
                       />
                     ) : (
