@@ -1,6 +1,6 @@
 # HomeConnect - Full-Stack Real Estate Platform
 
-![HomeConnect Demo GIF](/.github/assets/demo.gif)
+[HomeConnect Demo GIF](/.github/assets/demo.gif)
 
 **Live Demo:** [https://homeconnect-ruddy.vercel.app/](https://homeconnect-ruddy.vercel.app/)
 
