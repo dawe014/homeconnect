@@ -54,7 +54,7 @@ export default function AgentCard({ agent }: { agent: Agent }) {
 
       <div className="mt-6 flex w-full flex-col space-y-3">
         <Link
-          to={`/agent/${agent._id}`}
+          to={`/agent-listings/${agent._id}`}
           className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
           View Profile & Listings
