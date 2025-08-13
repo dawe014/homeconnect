@@ -10,6 +10,8 @@ import {
 import { FaRegArrowAltCircleRight } from "react-icons/fa";
 
 export default function Navbar() {
+  const SERVER_URL = import.meta.env.VITE_API_SERVER_URL || "";
+
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -119,7 +121,7 @@ export default function Navbar() {
                       className="h-8 w-8 rounded-full object-cover"
                       src={
                         user.avatar
-                          ? user.avatar
+                          ? `${SERVER_URL}/${user.avatar}`
                           : `https://ui-avatars.com/api/?name=${encodeURIComponent(
                               user.name
                             )}&background=e0e7ff&color=4338ca&size=256`
@@ -202,7 +204,7 @@ export default function Navbar() {
                         className="h-10 w-10 rounded-full object-cover"
                         src={
                           user.avatar
-                            ? user.avatar
+                            ? `${SERVER_URL}/${user.avatar}`
                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(
                                 user.name
                               )}&background=e0e7ff&color=4338ca&size=256`
