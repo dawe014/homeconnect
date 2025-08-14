@@ -37,7 +37,6 @@ export default function HeroImageGrid({ images, title }: GalleryProps) {
   return (
     <>
       <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[32rem] rounded-lg overflow-hidden shadow-lg">
-        {/* Main Image */}
         <div
           className="col-span-4 sm:col-span-2 row-span-2 cursor-pointer"
           onClick={() => openLightbox(0)}
@@ -48,11 +47,10 @@ export default function HeroImageGrid({ images, title }: GalleryProps) {
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           />
         </div>
-        {/* Other Images */}
         {imageUrls.slice(1, 3).map((img, i) => (
           <div
             key={i}
-            className="hidden sm:block cursor-pointer"
+            className=" sm:block cursor-pointer"
             onClick={() => openLightbox(i + 1)}
           >
             <img
@@ -62,7 +60,6 @@ export default function HeroImageGrid({ images, title }: GalleryProps) {
             />
           </div>
         ))}
-        {/* The "View All" overlay */}
         <div
           className="hidden sm:block relative cursor-pointer"
           onClick={() => openLightbox(0)}

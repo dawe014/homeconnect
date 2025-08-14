@@ -1,4 +1,3 @@
-// client/src/components/Navbar.tsx
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
