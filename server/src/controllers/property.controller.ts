@@ -160,82 +160,80 @@ export const updateProperty = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Property not found" });
     }
 
-    // Check if the user is the owner of the property or an admin
-    if (
-      !(property.agent as Types.ObjectId).equals(
-        req.user!._id as Types.ObjectId
-      ) &&
-      req.user?.role !== "admin"
-    ) {
-      return res.status(401).json({ message: "User not authorized" });
+    const isOwner = (property.agent as Types.ObjectId).equals(
+      req.user!._id as Types.ObjectId
+    );
+    const isAdmin = req.user?.role === "admin";
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "User not authorized" });
     }
 
-    const { imagesToDelete } = req.body;
-    if (imagesToDelete) {
-      const parsedImagesToDelete: string[] = JSON.parse(imagesToDelete);
+    let currentImages = [...property.images];
 
-      if (
-        Array.isArray(parsedImagesToDelete) &&
-        parsedImagesToDelete.length > 0
-      ) {
-        for (const imageUrl of parsedImagesToDelete) {
-          try {
-            const filename = path.basename(imageUrl);
-            const filePath = path.join(process.cwd(), "uploads", filename);
+    if (req.body.imagesToDelete) {
+      const imagesToDelete: string[] = JSON.parse(req.body.imagesToDelete);
 
-            await fs.unlink(filePath);
-          } catch (err: any) {
-            console.error(
-              `Failed to delete file for URL ${imageUrl}:`,
-              err.message
+      currentImages = currentImages.filter(
+        (img) => !imagesToDelete.includes(img)
+      );
+
+      for (const imageUrl of imagesToDelete) {
+        try {
+          if (process.env.CLOUDINARY_URL) {
+            const publicIdWithFolder = imageUrl.substring(
+              imageUrl.indexOf("homeconnect_properties/")
             );
-          }
-        }
+            const publicId = publicIdWithFolder.substring(
+              0,
+              publicIdWithFolder.lastIndexOf(".")
+            );
+            if (publicId) {
+              await cloudinary.uploader.destroy(publicId);
+            }
+          } else {
+            const filename = path.basename(imageUrl);
+            const localPath = path.resolve(process.cwd(), "uploads", filename);
 
-        property.images = property.images.filter(
-          (img) => !parsedImagesToDelete.includes(img)
-        );
+            if (localPath.startsWith(path.resolve(process.cwd(), "uploads"))) {
+              await fs.unlink(localPath);
+            }
+          }
+        } catch (err) {
+          console.error(`Failed to delete image ${imageUrl}:`, err);
+        }
       }
     }
 
     if (req.files && (req.files as Express.Multer.File[]).length > 0) {
-      const newImagePaths = (req.files as Express.Multer.File[]).map(
-        (file) => `/uploads/${file.filename}`
-      );
-      property.images.push(...newImagePaths);
+      const newImageFiles = req.files as Express.Multer.File[];
+      let newImageUrls: string[] = [];
+
+      if (process.env.CLOUDINARY_URL) {
+        const uploadPromises = newImageFiles.map(
+          (file) =>
+            new Promise<string>((resolve, reject) => {
+              const uploadStream = cloudinary.uploader.upload_stream(
+                { folder: "homeconnect_properties" },
+                (error, result) => {
+                  if (error) return reject(error);
+                  resolve(result!.secure_url);
+                }
+              );
+              uploadStream.end(file.buffer);
+            })
+        );
+        newImageUrls = await Promise.all(uploadPromises);
+      } else {
+        newImageUrls = newImageFiles.map(
+          (file) => `/${file.path.replace(/\\/g, "/")}`
+        );
+      }
+      currentImages.push(...newImageUrls);
     }
 
-    const {
-      title,
-      description,
-      price,
-      address,
-      city,
-      state,
-      zipCode,
-      bedrooms,
-      bathrooms,
-      sqft,
-      latitude,
-      longitude,
-      propertyType,
-      status,
-    } = req.body;
+    Object.assign(property, req.body);
 
-    if (title) property.title = title;
-    if (description) property.description = description;
-    if (price) property.price = price;
-    if (address) property.address = address;
-    if (city) property.city = city;
-    if (state) property.state = state;
-    if (zipCode) property.zipCode = zipCode;
-    if (bedrooms) property.bedrooms = bedrooms;
-    if (sqft) property.sqft = sqft;
-    if (latitude) property.latitude = latitude;
-    if (longitude) property.longitude = longitude;
-    if (bathrooms) property.bathrooms = bathrooms;
-    if (propertyType) property.propertyType = propertyType;
-    if (status) property.status = status;
+    property.images = currentImages;
 
     const updatedProperty = await property.save();
     res.json(updatedProperty);
