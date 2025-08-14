@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { HomeModernIcon } from "@heroicons/react/24/solid";
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 
 const SocialIcon = ({
@@ -46,7 +45,6 @@ export default function Footer() {
           {/* Branding Section */}
           <div className="space-y-8">
             <Link to="/" className="flex items-center space-x-2">
-              <HomeModernIcon className="h-8 w-8 text-indigo-500" />
               <span className="text-2xl font-bold text-white">HomeConnect</span>
             </Link>
             <p className="text-sm leading-6 text-gray-300">

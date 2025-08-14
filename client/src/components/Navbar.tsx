@@ -1,3 +1,4 @@
+// client/src/components/Navbar.tsx
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -7,14 +8,19 @@ import {
   Bars3Icon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { FaRegArrowAltCircleRight } from "react-icons/fa";
+import { FaArrowAltCircleRight } from "react-icons/fa";
 
-const SERVER_URL = import.meta.env.VITE_API_SERVER_URL || "";
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const avatarUrl =
+    user?.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user?.name || "U"
+    )}&background=e0e7ff&color=4338ca`;
 
   const navLinks = [
     { text: "For Sale", href: "/for-sale" },
@@ -34,21 +40,6 @@ export default function Navbar() {
     closeAllMenus();
     navigate("/");
   };
-
-  const getAvatarUrl = () => {
-    if (user?.avatar) {
-      if (user?.avatar.startsWith("http")) {
-        return user?.avatar;
-      }
-      return `${SERVER_URL}${user?.avatar}`;
-    }
-
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user?.name || "User"
-    )}&background=e0e7ff&color=4338ca&size=256`;
-  };
-
-  const avatarUrl = getAvatarUrl();
 
   const getMobileNavLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
@@ -85,7 +76,7 @@ export default function Navbar() {
         onClick={handleLogout}
         className="w-full text-left text-gray-600 hover:bg-gray-100 hover:text-gray-900 group flex items-center px-4 py-2 text-sm rounded-md"
       >
-        <FaRegArrowAltCircleRight className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+        <FaArrowAltCircleRight className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
         Logout
       </button>
     </>
@@ -101,13 +92,12 @@ export default function Navbar() {
               onClick={closeAllMenus}
               className="flex-shrink-0 flex items-center space-x-2"
             >
-              <img src="/2.png" alt="logo" className="h-16 w-16 rounded-full" />
+              <img src="/2.png" alt="HomeConnect Logo" className="h-16 w-16" />
               <span className="text-2xl font-bold text-gray-800 hidden sm:block">
                 HomeConnect
               </span>
             </Link>
 
-            {/* == Desktop Primary Navigation == */}
             <div className="hidden md:ml-10 md:flex md:items-baseline md:space-x-8">
               {navLinks.map((link) => (
                 <NavLink
@@ -121,25 +111,18 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* == Desktop Actions Section == */}
           <div className="hidden md:flex md:items-center md:space-x-6">
             {isAuthenticated ? (
-              // -- Logged-in state (Desktop) --
               <div className="relative">
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100"
                 >
-                  {user?.avatar ? (
-                    <img
-                      className="h-8 w-8 rounded-full object-cover"
-                      src={avatarUrl}
-                      alt={user.name}
-                    />
-                  ) : (
-                    <UserCircleIcon className="h-8 w-8 text-gray-500" />
-                  )}
-
+                  <img
+                    className="h-8 w-8 rounded-full object-cover bg-gray-200"
+                    src={avatarUrl}
+                    alt={user?.name || "User Avatar"}
+                  />
                   <span className="font-medium text-gray-700">
                     {user?.name}
                   </span>
@@ -154,7 +137,6 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              // -- Guest state (Desktop) --
               <div className="flex items-center space-x-4">
                 <NavLink
                   to="/login"
@@ -172,7 +154,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* == Mobile Menu Button == */}
           <div className="md:hidden flex items-center">
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? (
@@ -185,11 +166,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* == Mobile Menu Panel == */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {/* Primary Mobile Links */}
             {navLinks.map((link) => (
               <NavLink
                 key={link.text}
@@ -200,22 +179,15 @@ export default function Navbar() {
                 {link.text}
               </NavLink>
             ))}
-
-            {/* Separator and Auth Links */}
             <div className="pt-4 mt-4 border-t border-gray-200">
               {isAuthenticated ? (
-                // -- Logged-in state (Mobile) --
                 <div className="px-2 py-3">
                   <div className="flex items-center space-x-3 mb-3">
-                    {user?.avatar ? (
-                      <img
-                        className="h-10 w-10 rounded-full object-cover"
-                        src={avatarUrl}
-                        alt={user.name}
-                      />
-                    ) : (
-                      <UserCircleIcon className="h-10 w-10 text-gray-500" />
-                    )}
+                    <img
+                      className="h-10 w-10 rounded-full object-cover bg-gray-200"
+                      src={avatarUrl}
+                      alt={user?.name || "User Avatar"}
+                    />
                     <div>
                       <p className="font-bold text-gray-800">{user?.name}</p>
                       <p className="text-sm text-gray-500">{user?.email}</p>
@@ -224,7 +196,6 @@ export default function Navbar() {
                   <div className="space-y-1 mt-3">{profileMenuItems}</div>
                 </div>
               ) : (
-                // -- Guest state (Mobile) --
                 <div className="flex flex-col space-y-2">
                   <NavLink
                     to="/login"

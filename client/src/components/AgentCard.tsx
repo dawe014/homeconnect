@@ -11,22 +11,11 @@ interface Agent {
 }
 
 export default function AgentCard({ agent }: { agent: Agent }) {
-  const SERVER_URL = import.meta.env.VITE_API_SERVER_URL || "";
-
-  const getAvatarUrl = () => {
-    if (agent.avatar) {
-      if (agent.avatar.startsWith("http")) {
-        return agent.avatar;
-      }
-      return `${SERVER_URL}${agent.avatar}`;
-    }
-
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      agent.name
-    )}&background=e0e7ff&color=4338ca&size=256`;
-  };
-
-  const avatarUrl = getAvatarUrl();
+  const avatarUrl =
+    agent?.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      agent?.name || "U"
+    )}&background=e0e7ff&color=4338ca`;
 
   return (
     <div className="group relative flex flex-col items-center rounded-lg bg-white p-6 text-center shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1">

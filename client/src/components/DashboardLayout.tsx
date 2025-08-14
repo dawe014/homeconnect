@@ -17,12 +17,12 @@ import { FaArrowAltCircleRight } from "react-icons/fa";
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
-  const userAvatar = user?.avatar?.startsWith("http")
-    ? user.avatar
-    : user?.avatar
-    ? `${SERVER_URL}${user.avatar}`
-    : `https://ui-avatars.com/api/?name=${user?.name}`;
+
+  const userAvatar =
+    user?.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user?.name || "U"
+    )}&background=e0e7ff&color=4338ca`;
 
   const navigation = [
     {
