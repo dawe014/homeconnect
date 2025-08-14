@@ -3,58 +3,53 @@ import Property from "../models/property.model";
 import { Types } from "mongoose";
 import fs from "fs/promises";
 import path from "path";
+import cloudinary from "../config/cloudinary.config";
 
 // @desc    Create a new property
 // @route   POST /api/properties
 // @access  Private (Agent/Admin)
+
 export const createProperty = async (req: Request, res: Response) => {
   try {
-    const {
-      title,
-      description,
-      price,
-      address,
-      city,
-      state,
-      zipCode,
-      bedrooms,
-      bathrooms,
-      sqft,
-      latitude,
-      longitude,
-      propertyType,
-      status,
-    } = req.body;
+    const files = req.files as Express.Multer.File[];
 
-    const images = (req.files as Express.Multer.File[]).map(
-      (file) => `/uploads/${file.filename}`
+    if (!files || files.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "At least one image is required." });
+    }
+
+    // Upload images to Cloudinary
+    const uploadPromises = files.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "homeconnect_properties" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result!.secure_url);
+            }
+          );
+          uploadStream.end(file.buffer);
+        })
     );
 
+    const imageUrls = await Promise.all(uploadPromises);
+
     const property = new Property({
-      title,
-      description,
-      price,
-      address,
-      city,
-      state,
-      zipCode,
-      bedrooms,
-      bathrooms,
-      sqft,
-      latitude,
-      longitude,
-      propertyType,
-      status,
-      images,
+      ...req.body,
+      images: imageUrls, // Cloudinary URLs
       agent: req.user?._id,
     });
 
     const createdProperty = await property.save();
     res.status(201).json(createdProperty);
   } catch (error: any) {
-    res
-      .status(400)
-      .json({ message: "Error creating property", error: error.message });
+    console.error("Error creating property:", error);
+    res.status(500).json({
+      message: "Error creating property",
+      error: error.message,
+    });
   }
 };
 

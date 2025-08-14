@@ -3,6 +3,7 @@ import User from "../models/user.model";
 import Property from "../models/property.model";
 import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
+import cloudinary from "../config/cloudinary.config";
 
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
@@ -156,11 +157,17 @@ export const getAgents = async (req: Request, res: Response) => {
 // @route   PUT /api/users/profile
 // @access  Private
 export const updateUserProfile = async (req: Request, res: Response) => {
-  const user = await User.findById(req.user?._id);
+  try {
+    const user = await User.findById(req.user?._id);
 
-  if (user) {
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update name
     user.name = req.body.name || user.name;
 
+    // Update email if different
     if (req.body.email && req.body.email !== user.email) {
       const userExists = await User.findOne({ email: req.body.email });
       if (userExists) {
@@ -170,9 +177,22 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       }
       user.email = req.body.email;
     }
-    if (req.file) {
-      const avatarPath = req.file.path.replace(/\\/g, "/");
-      user.avatar = `/${avatarPath}`;
+
+    // Upload avatar to Cloudinary if provided
+    if (req.file && req.file.buffer) {
+      const result = await new Promise<{ secure_url: string }>(
+        (resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "homeconnect_avatars" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result!);
+            }
+          );
+          uploadStream.end(req.file!.buffer);
+        }
+      );
+      user.avatar = result.secure_url;
     }
 
     const updatedUser = await user.save();
@@ -185,8 +205,11 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       avatar: updatedUser.avatar,
       token: generateToken((updatedUser._id as Types.ObjectId).toString()),
     });
-  } else {
-    res.status(404).json({ message: "User not found" });
+  } catch (error: any) {
+    console.error("Error updating profile:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating profile", error: error.message });
   }
 };
 

@@ -24,7 +24,7 @@ export default function AddListingPage() {
     },
   });
 
-  const handleSubmit = (data: TPropertyFormSchema, images?: FileList) => {
+  const handleSubmit = (data: TPropertyFormSchema, images?: File[]) => {
     const propertyData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
@@ -32,10 +32,11 @@ export default function AddListingPage() {
     });
 
     if (images) {
-      for (let i = 0; i < images.length; i++) {
-        propertyData.append("images", images[i]);
-      }
+      images.forEach((file) => {
+        propertyData.append("images", file);
+      });
     }
+
     mutation.mutate(propertyData);
   };
 

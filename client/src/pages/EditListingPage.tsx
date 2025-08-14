@@ -11,14 +11,11 @@ import type {
 } from "../lib/validators";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
-const SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
-
 const fetchPropertyById = async (id: string): Promise<Property> => {
   const { data } = await api.get(`/properties/${id}`);
   return data;
 };
 
-// Helper function to convert Property type to form initial data
 const propertyToFormData = (
   property: Property
 ): Partial<TClientPropertyFormSchema> => {
@@ -71,7 +68,7 @@ export default function EditListingPage() {
     },
   });
 
-  const handleSubmit = (data: TPropertyFormSchema, newImages?: FileList) => {
+  const handleSubmit = (data: TPropertyFormSchema, newImages?: File[]) => {
     const propertyData = new FormData();
 
     Object.entries(data).forEach(([key, value]) =>
@@ -81,10 +78,11 @@ export default function EditListingPage() {
     propertyData.append("imagesToDelete", JSON.stringify(imagesToDelete));
 
     if (newImages) {
-      for (let i = 0; i < newImages.length; i++) {
-        propertyData.append("images", newImages[i]);
-      }
+      newImages.forEach((file) => {
+        propertyData.append("images", file);
+      });
     }
+
     mutation.mutate(propertyData);
   };
 
@@ -123,11 +121,7 @@ export default function EditListingPage() {
             {existingImages.map((imageUrl) => (
               <div key={imageUrl} className="relative group">
                 <img
-                  src={
-                    imageUrl.startsWith("http")
-                      ? imageUrl
-                      : `${SERVER_URL}${imageUrl}`
-                  }
+                  src={imageUrl}
                   alt="Property"
                   className="w-full h-32 object-cover rounded-md"
                 />

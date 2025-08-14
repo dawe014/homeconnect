@@ -1,32 +1,35 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   clientPropertyFormSchema,
   propertyFormSchema,
-} from "../lib/validators";
+} from "../lib/validators"; // Assuming these are correctly defined elsewhere
 import type {
   TClientPropertyFormSchema,
   TPropertyFormSchema,
-} from "../lib/validators";
+} from "../lib/validators"; // Assuming these are correctly defined elsewhere
 
 import {
   ExclamationCircleIcon,
   PhotoIcon,
   CurrencyDollarIcon,
   ArrowsPointingOutIcon,
+  XCircleIcon, // Icon for removing images
 } from "@heroicons/react/24/solid";
 import { FaBath, FaBed } from "react-icons/fa";
 
+// --- PROPS INTERFACE ---
 interface PropertyFormProps {
   initialData?: Partial<TClientPropertyFormSchema>;
   isSubmitting: boolean;
   submitButtonText: string;
-  onFormSubmit: (data: TPropertyFormSchema, images?: FileList) => void;
+  onFormSubmit: (data: TPropertyFormSchema, images?: File[]) => void; // Use File[]
   errorMessage?: string;
 }
 
+// --- HELPER COMPONENTS ---
 const FormLabel = (props: React.ComponentPropsWithoutRef<"label">) => (
   <label
     {...props}
@@ -49,6 +52,7 @@ const InputWithIcon = ({
   </div>
 );
 
+// --- MAIN FORM COMPONENT ---
 export default function PropertyForm({
   initialData,
   isSubmitting,
@@ -56,7 +60,11 @@ export default function PropertyForm({
   onFormSubmit,
   errorMessage,
 }: PropertyFormProps) {
-  const [imageFiles, setImageFiles] = React.useState<FileList | null>(null);
+  // Use File[] which is easier to manipulate than FileList
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  // State to track if a file is being dragged over the drop zone
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -67,17 +75,61 @@ export default function PropertyForm({
     defaultValues: initialData,
   });
 
+  // --- FORM & FILE HANDLERS ---
   const onSubmit: SubmitHandler<TClientPropertyFormSchema> = (data) => {
     const transformedData = propertyFormSchema.parse(data);
-    onFormSubmit(transformedData, imageFiles || undefined);
+    onFormSubmit(
+      transformedData,
+      imageFiles.length > 0 ? imageFiles : undefined
+    );
   };
 
-  const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setImageFiles(e.target.files);
+  const handleFileSelect = (files: FileList | null) => {
+    if (files) {
+      // Append new files to the existing array, avoiding duplicates by name
+      const newFiles = Array.from(files).filter(
+        (file) =>
+          !imageFiles.some((existingFile) => existingFile.name === file.name)
+      );
+      setImageFiles((prevFiles) => [...prevFiles, ...newFiles]);
     }
   };
 
+  const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileSelect(e.target.files);
+    // Reset file input to allow selecting the same file again
+    if (e.target) {
+      e.target.value = "";
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setImageFiles((prevFiles) =>
+      prevFiles.filter((_, index) => index !== indexToRemove)
+    );
+  };
+
+  // --- DRAG & DROP HANDLERS ---
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Prevent default behavior (opening file in browser)
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    handleFileSelect(e.dataTransfer.files);
+  };
+
+  // --- ERROR MESSAGE COMPONENT ---
   const ErrorMessage = ({ name }: { name: keyof TClientPropertyFormSchema }) =>
     errors[name] ? (
       <p className="mt-1 text-sm text-red-600">{errors[name]?.message}</p>
@@ -85,6 +137,7 @@ export default function PropertyForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
+      {/* SECTION: Core Information */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Core Information
@@ -137,6 +190,7 @@ export default function PropertyForm({
         </div>
       </div>
 
+      {/* SECTION: Location Details */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Location Details
@@ -224,6 +278,7 @@ export default function PropertyForm({
         </div>
       </div>
 
+      {/* SECTION: Features & Status */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Features & Status
@@ -295,6 +350,7 @@ export default function PropertyForm({
         </div>
       </div>
 
+      {/* SECTION: Property Images (MODIFIED) */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Property Images
@@ -303,7 +359,16 @@ export default function PropertyForm({
           Upload new images to add to the listing.
         </p>
         <div className="mt-10 col-span-full">
-          <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`mt-2 flex justify-center rounded-lg border border-dashed px-6 py-10 transition-colors ${
+              isDragging
+                ? "border-indigo-600 bg-indigo-50"
+                : "border-gray-900/25"
+            }`}
+          >
             <div className="text-center">
               <PhotoIcon
                 className="mx-auto h-12 w-12 text-gray-300"
@@ -317,6 +382,7 @@ export default function PropertyForm({
                   <span>Upload files</span>
                   <input
                     id="file-upload"
+                    ref={fileInputRef}
                     name="images"
                     type="file"
                     multiple
@@ -333,8 +399,43 @@ export default function PropertyForm({
             </div>
           </div>
         </div>
+
+        {/* NEW: Image Preview Section */}
+        {imageFiles.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-medium text-gray-900">
+              Selected Files:
+            </h3>
+            <ul className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {imageFiles.map((file, index) => (
+                <li key={file.name + index} className="relative group">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)} // Clean up object URLs to prevent memory leaks
+                    className="h-28 w-28 object-cover rounded-md"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="text-white p-1"
+                      aria-label={`Remove ${file.name}`}
+                    >
+                      <XCircleIcon className="h-8 w-8" />
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500 truncate w-28">
+                    {file.name}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
+      {/* SECTION: Form Actions */}
       <div className="mt-6 flex items-center justify-end gap-x-6">
         {errorMessage && (
           <div className="flex items-center text-sm text-red-600">

@@ -12,18 +12,14 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
-
 interface PropertyCardProps {
   property: Property;
 }
 
 export default function PropertyCard({ property }: PropertyCardProps) {
-  const imageUrl = property.images[0]?.startsWith("http")
-    ? property.images[0]
-    : property.images[0]
-    ? `${SERVER_URL}${property.images[0]}`
-    : "https://via.placeholder.com/400x300.png?text=No+Image";
+  const imageUrl =
+    property.images[0] ||
+    "https://via.placeholder.com/400x300.png?text=No+Image";
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
