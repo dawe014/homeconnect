@@ -5,22 +5,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   clientPropertyFormSchema,
   propertyFormSchema,
-} from "../lib/validators"; // Assuming these are correctly defined elsewhere
+} from "../lib/validators";
 import type {
   TClientPropertyFormSchema,
   TPropertyFormSchema,
-} from "../lib/validators"; // Assuming these are correctly defined elsewhere
+} from "../lib/validators";
 
 import {
   ExclamationCircleIcon,
   PhotoIcon,
   CurrencyDollarIcon,
   ArrowsPointingOutIcon,
-  XCircleIcon, // Icon for removing images
+  XCircleIcon,
 } from "@heroicons/react/24/solid";
 import { FaBath, FaBed } from "react-icons/fa";
 
-// --- PROPS INTERFACE ---
 interface PropertyFormProps {
   initialData?: Partial<TClientPropertyFormSchema>;
   isSubmitting: boolean;
@@ -29,7 +28,6 @@ interface PropertyFormProps {
   errorMessage?: string;
 }
 
-// --- HELPER COMPONENTS ---
 const FormLabel = (props: React.ComponentPropsWithoutRef<"label">) => (
   <label
     {...props}
@@ -52,7 +50,6 @@ const InputWithIcon = ({
   </div>
 );
 
-// --- MAIN FORM COMPONENT ---
 export default function PropertyForm({
   initialData,
   isSubmitting,
@@ -60,9 +57,7 @@ export default function PropertyForm({
   onFormSubmit,
   errorMessage,
 }: PropertyFormProps) {
-  // Use File[] which is easier to manipulate than FileList
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  // State to track if a file is being dragged over the drop zone
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -75,7 +70,6 @@ export default function PropertyForm({
     defaultValues: initialData,
   });
 
-  // --- FORM & FILE HANDLERS ---
   const onSubmit: SubmitHandler<TClientPropertyFormSchema> = (data) => {
     const transformedData = propertyFormSchema.parse(data);
     onFormSubmit(
@@ -86,7 +80,6 @@ export default function PropertyForm({
 
   const handleFileSelect = (files: FileList | null) => {
     if (files) {
-      // Append new files to the existing array, avoiding duplicates by name
       const newFiles = Array.from(files).filter(
         (file) =>
           !imageFiles.some((existingFile) => existingFile.name === file.name)
@@ -97,7 +90,6 @@ export default function PropertyForm({
 
   const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFileSelect(e.target.files);
-    // Reset file input to allow selecting the same file again
     if (e.target) {
       e.target.value = "";
     }
@@ -109,9 +101,8 @@ export default function PropertyForm({
     );
   };
 
-  // --- DRAG & DROP HANDLERS ---
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); // Prevent default behavior (opening file in browser)
+    e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
@@ -129,7 +120,6 @@ export default function PropertyForm({
     handleFileSelect(e.dataTransfer.files);
   };
 
-  // --- ERROR MESSAGE COMPONENT ---
   const ErrorMessage = ({ name }: { name: keyof TClientPropertyFormSchema }) =>
     errors[name] ? (
       <p className="mt-1 text-sm text-red-600">{errors[name]?.message}</p>
@@ -137,7 +127,6 @@ export default function PropertyForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
-      {/* SECTION: Core Information */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Core Information
@@ -190,7 +179,6 @@ export default function PropertyForm({
         </div>
       </div>
 
-      {/* SECTION: Location Details */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Location Details
@@ -278,7 +266,6 @@ export default function PropertyForm({
         </div>
       </div>
 
-      {/* SECTION: Features & Status */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Features & Status
@@ -350,7 +337,6 @@ export default function PropertyForm({
         </div>
       </div>
 
-      {/* SECTION: Property Images (MODIFIED) */}
       <div className="border-b border-gray-900/10 pb-12">
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           Property Images
@@ -400,7 +386,6 @@ export default function PropertyForm({
           </div>
         </div>
 
-        {/* NEW: Image Preview Section */}
         {imageFiles.length > 0 && (
           <div className="mt-6">
             <h3 className="text-sm font-medium text-gray-900">
@@ -412,7 +397,7 @@ export default function PropertyForm({
                   <img
                     src={URL.createObjectURL(file)}
                     alt={file.name}
-                    onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)} // Clean up object URLs to prevent memory leaks
+                    onLoad={(e) => URL.revokeObjectURL(e.currentTarget.src)}
                     className="h-28 w-28 object-cover rounded-md"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
@@ -435,7 +420,6 @@ export default function PropertyForm({
         )}
       </div>
 
-      {/* SECTION: Form Actions */}
       <div className="mt-6 flex items-center justify-end gap-x-6">
         {errorMessage && (
           <div className="flex items-center text-sm text-red-600">
